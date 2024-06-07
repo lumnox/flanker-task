@@ -13,13 +13,11 @@ from psychopy import visual, event, logging, gui, core
 
 @atexit.register
 def save_beh_results() -> None:
-    """
-    Save results of experiment. Decorated with @atexit in order to make sure, that intermediate
-    results will be saved even if interpreter will break.
 
-    Returns:
-        Nothing.
-    """
+    '''
+    Funkcja odpowiadająca za zapisywanie pliku wyjściowego w formacie ".csv".
+    @atexit zostało użyte, w celu zapisania wyników, nawet w przypadku błędu interpretera.
+    '''
 
     file_name = PART_ID + '_' + str(random.choice(range(100, 1000))) + '_beh.csv'
     with open(join('results', file_name), 'w', encoding='utf-8') as beh_file:
@@ -29,23 +27,22 @@ def save_beh_results() -> None:
 
 
 def show_image(win: visual.window, file_name: str, size: List[int], key: str = 'f7') -> None:
-    """
-    Show instructions in a form of an image.
-    Args:
-        win:
-        file_name: Img file.
-        size: Img size [width, height].
-        key: Key to terminate procedure.
 
-    Returns:
-        Nothing.
-    """
+    '''
+    Funkcja odpowiedzialna za wyświetlenie początkowych istrukcji przy użyciu zdjęcia.
+    Przyjmuje argumenty:
+    win: okno, na którym będzie wyświetlona instrukcja
+    file_name: ścieżka do pliku
+    size: wielkość zdjęcia [szerokość, wysokość]
+    key: Klawisz, który po naciśnięciu zakończy procedurę
+
+    '''
     image = visual.ImageStim(win=win, image=file_name, interpolate=True, size=size)
     image.draw()
     win.flip()
-    clicked = event.waitKeys(keyList=[key, 'return', 'space'])
+    clicked = event.waitKeys(keyList=[key, 'space'])
     if clicked == [key]:
-        logging.critical('Experiment finished by user! {} pressed.'.format(key[0]))
+        logging.critical('Eksperyment zakończony przez uczestnika! Naciśnięto {}.'.format(key[0]))
         exit(0)
     win.flip()
 
