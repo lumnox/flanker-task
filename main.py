@@ -29,7 +29,7 @@ def save_beh_results() -> None:
 def show_image(win: visual.window, file_name: str, size: List[int], key: str = 'f7') -> None:
 
     '''
-    Funkcja odpowiedzialna za wyświetlenie początkowych istrukcji przy użyciu zdjęcia.
+    Funkcja odpowiedzialna za wyświetlenie początkowych instrukcji przy użyciu zdjęcia.
     Przyjmuje argumenty:
     win: okno, na którym będzie wyświetlona instrukcja
     file_name: ścieżka do pliku
@@ -49,22 +49,20 @@ def show_image(win: visual.window, file_name: str, size: List[int], key: str = '
 
 def read_text_from_file(file_name: str, insert: str = '') -> str:
     """
-    Method that read message from text file, and optionally add some
-    dynamically generated info.
-    Args:
-        file_name: Name of file to read
+    Fragment kodu, który czyta plik tekstowy i dodaje do niego informacje wygenerowane w trakcie działania programu
+    Argumenty:
+        file_name: Nazwa pliku
         insert:
 
-    Returns:
-        String to display.
+    Funkcja zwraca łańcuch znaków do wyświetlania
     """
     if not isinstance(file_name, str):
-        logging.error('Problem with file reading, filename must be a string')
-        raise TypeError('file_name must be a string')
+        logging.error('Problem z przetworzeniem pliku. Nazwa pliku musi być łańcuchem znaków')
+        raise TypeError('file_name musi być łańcuchem znakowym')
     msg = list()
     with codecs.open(file_name, encoding='utf-8', mode='r') as data_file:
         for line in data_file:
-            if not line.startswith('#'):  # if not commented line
+            if not line.startswith('#'): 
                 if line.startswith('<--insert-->'):
                     if insert:
                         msg.append(insert)
@@ -75,26 +73,16 @@ def read_text_from_file(file_name: str, insert: str = '') -> str:
 
 def check_exit(key: str = 'f7') -> None:
     """
-    Check if exit button pressed.
-
-    Returns:
-        Nothing.
+    Sprawdzanie czy przez użytkownika został wciśnięty przycisk wyjścia z programu
     """
     stop = event.getKeys(keyList=[key])
     if stop:
-        abort_with_error('Experiment finished by user! {} pressed.'.format(key))
+        abort_with_error('Eksperyment został zakończony przez użytkownika! {} pressed.'.format(key))
 
 
 def show_info(win: visual.Window, file_name: str, insert: str = '') -> None:
     """
-    Clear way to show info message into screen.
-    Args:
-        win:
-        file_name:
-        insert:
-
-    Returns:
-        Nothing.
+    Tworzenie okna, które wyświetla tekst pliku
     """
     msg = read_text_from_file(file_name, insert=insert)
     msg = visual.TextStim(win, color='black', text=msg, height=20, wrapWidth=1000)
@@ -102,16 +90,13 @@ def show_info(win: visual.Window, file_name: str, insert: str = '') -> None:
     win.flip()
     key = event.waitKeys(keyList=['f7', 'return', 'space', 'left', 'right'])
     if key == ['f7']:
-        abort_with_error('Experiment finished by user on info screen! F7 pressed.')
+        abort_with_error('Eksperyment zakończony przez użytkownika! Klawisz F7 został naciśniety.')
     win.flip()
 
 
 def abort_with_error(err: str) -> None:
     """
-    Call if an error occurred.
-
-    Returns:
-        Nothing.
+    Uruchamia się pdoczas błędu
     """
     logging.critical(err)
     raise Exception(err)
@@ -119,117 +104,108 @@ def abort_with_error(err: str) -> None:
 
 def run_trial(win, conf, clock, stim):
     """
-    Prepare and present single trial of procedure.
-    Input (params) should consist all data need for presenting stimuli.
-    If some stimulus (eg. text, label, button) will be presented across many trials.
-    Should be prepared outside this function and passed for .draw() or .setAutoDraw().
-    Returns:
-        All behavioral data (reaction time, answer, etc. should be returned from this function).
+Funkcja, która odpowiada za pojędyńczą próbę eksperymentalną w procedurze
+
+Zwraca klawisz naciśnięty przez użytkownika, czas reakcji, czy naciśnięty klawisz jest zgodny z wyświetlanym bodźcem,   
+rodzaj bodźca, czas wyświetlania bodźca
     """
 
-    # === Prepare trial-related stimulus ===
-    # Randomise if needed
-    #
-    # Examples:
-    #
-    # que_pos = random.choice([-conf['STIM_SHIFT'], conf['STIM_SHIFT']])
+    # Przygotowanie losowego wyświetlania bodźców
+    
     stim_image = random.choice([("images\\neutr_p.png", 'right'),
                                 ("images\\neutr_l.png", 'left'),
                                 ("images\\zgdn_l.png", 'left'),
                                 ("images\\zgdn_p.png", 'right'),
                                 ("images\\nzgdn_p.png", 'right'),
                                 ("images\\nzgdn_l.png", 'left')])
-
+                            
     stim.image = stim_image[0]
     correct_key = stim_image[1]
     rbodz = ''
     if stim_image[0] == "images\\neutr_p.png" or stim_image[0] == "images\\neutr_l.png":
         rbodz = "Neutralny"
-    elif stim_image[0] == "images\\zgodn_p.png" or stim_image[0] == "images\\zgodn_l.png":
+    elif stim_image[0] == "images\\zgdn_p.png" or stim_image[0] == "images\\zgdn_l.png":
         rbodz = "Zgodny"
     elif stim_image[0] == "images\\nzgdn_p.png" or stim_image[0] == "images\\nzgdn_l.png":
         rbodz = "Niezgodny"
-    #
 
-    # === Start pre-trial  stuff (Fixation cross etc.)===
-
-    # === Start trial ===
-    # This part is time-crucial. All stims must be already prepared.
-    # Only .draw() .flip() and reaction related stuff goes there.
     event.clearEvents()
-    # make sure, that clock will be reset exactly when stimuli will be drawn
     win.callOnFlip(clock.reset)
 
-    for _ in range(random.choice(conf['STIM_TIME'])):  # present stimuli
+    # Przygotowanie losowania czasu dla wyświetlania bodźca
+    czasb = ""
+
+    stim_time = random.choice([9, 15, 21])
+    if stim_time == 9:
+        czasb = "150"
+    elif stim_time == 15:
+        czasb = "250"
+    elif stim_time == 21:
+        czasb = "350"
+
+    for _ in range(stim_time):  # present stimuli
         reaction = event.getKeys(keyList=list(conf['REACTION_KEYS']), timeStamped=clock)
-        if reaction:  # break if any button was pressed
+        if reaction:  # przerywa pętle jeśli klawisz zostanie naciśnięty
             break
         stim.draw()
         win.flip()
     reaction = None
-    if not reaction:  # no reaction during stim time, allow to answer after that
-        # question_frame.draw()
-        # question_label.draw()
+    if not reaction:  # jeśli użytkownik nie zareagował podczas wyświetlania bodźca program czeka na reakcje
         win.flip()
         reaction = event.waitKeys(keyList=list(conf['REACTION_KEYS']), maxWait=conf['REACTION_TIME'], timeStamped=clock)
-    # === Trial ended, prepare data for send  ===
+
     if reaction:
         key_pressed, rt = reaction[0]
-        rt = round(rt * 1000)
-    else:  # timeout
+        rt = round(rt * 1000) # przeliczanie czasu reakcji na milisekundy
+    else:  # program wypisuje -1 w pliku gdzie zapisują się wyniki
         key_pressed = 'no_key'
         rt = -1.0
 
     is_correct = (key_pressed == correct_key)
 
-    return key_pressed, rt, is_correct, rbodz  # return all data collected during trial
+    return key_pressed, rt, is_correct, rbodz, czasb  
 
 
-# GLOBAL VARIABLES
+# Zmienne globalne
 
-RESULTS = list()  # list in which data will be collected
-RESULTS.append(['Sesja', 'Numer próby', 'Czas reakcji', 'Poprawność', 'Rodzaj bodźca'])  # Results header
+RESULTS = list()  # Lista, w której będą zbierane dane
+RESULTS.append(['Sesja', 'Numer próby', 'Czas reakcji', 'Poprawność', 'Rodzaj bodźca',"Czas wyświetlania bodźca"])  # Nagłówek w pliku wyjściowym
 PART_ID = ''
 SCREEN_RES = []
 
-# === Dialog popup ===
+# Otwiera okno, w którym uczestnik wpisuje swoje dane
 info: Dict = {'Identyfikator': '', 'Płeć': ['M', "F"], 'Wiek': ''}
 dict_dlg = gui.DlgFromDict(dictionary=info, title='Test flankowy')
 if not dict_dlg.OK:
     abort_with_error('Ni mo.')
 
 clock = core.Clock()
-# load config, all params should be there
+# Wczytywanie zmiennych z pliku konfiguracyjnego
 conf: Dict = yaml.load(open('config.yaml', encoding='utf-8'), Loader=yaml.SafeLoader)
 frame_rate: int = conf['FRAME_RATE']
 SCREEN_RES: List[int] = conf['SCREEN_RES']
-# === Scene init ===
+# Stworzenie okna
 win = visual.Window(SCREEN_RES, fullscr=True, monitor='testMonitor', units='pix', color=conf['BACKGROUND_COLOR'])
-event.Mouse(visible=False, newPos=None, win=win)  # Make mouse invisible
+event.Mouse(visible=False, newPos=None, win=win)  # Sprawienie, żeby myszka była niewidoczna
 
 PART_ID = info['Identyfikator'] + info['Płeć'] + info['Wiek']
-logging.LogFile(join('results', f'{PART_ID}.log'), level=logging.INFO)  # errors logging
+logging.LogFile(join('results', f'{PART_ID}.log'), level=logging.INFO)  # logowanie błędów
 logging.info('FRAME RATE: {}'.format(frame_rate))
 logging.info('SCREEN RES: {}'.format(SCREEN_RES))
 
-# === Prepare stimulus here ===
-#
-# Examples:
+# Przygotowanie punktu fiksacji i bodźca
 fix_dot = visual.ImageStim(win, image='images\\BlackDot.png', size=[280, 280])
-# que = visual.Circle(win, radius=conf['QUE_RADIUS'], fillColor=conf['QUE_COLOR'], lineColor=conf['QUE_COLOR'])
-# stim = visual.TextStim(win, text="Press any arrow.", height=conf['STIM_SIZE'], color=conf['STIM_COLOR'])
-# mask = visual.ImageStim(win, image='mask4.png', size=(conf['STIM_SIZE'], conf['STIM_SIZE']))
 stim = visual.ImageStim(win, image='images\\neutr_p.png', size=(conf['STIM_SIZE1'], conf['STIM_SIZE2']))
 
-# === Training ===
+# Sesja treningowa
 show_image(win, join('.', 'images', 'instrukcja.png'), size=[1550, 1080])
 
 for trial_no in range(conf['TRAINING_TRIALS']):
-    key_pressed, rt, corr, rbodz = run_trial(win, conf, clock, stim)
+    key_pressed, rt, corr, rbodz, czasb = run_trial(win, conf, clock, stim)
 
-    RESULTS.append(["Trening", trial_no, '-', corr, rbodz])
+    RESULTS.append(["Trening", trial_no, '-', corr, rbodz, czasb])
 
-    # it's a good idea to show feedback during training trials
+    # Informacja zwrotna o poprawności udzielonej odpowiedzi
     feedb = "images\\zielony.png" if corr else "images\\czerwony.png"
     feedb = visual.ImageStim(win, image=feedb, size=[1920, 1080])
     feedb.draw()
@@ -237,20 +213,20 @@ for trial_no in range(conf['TRAINING_TRIALS']):
     core.wait(1)
     win.flip()
 
-# === Experiment ===
+# Sesja eksperymentalna
 show_info(win, join('.', 'messages', 'before_experiment.txt'))
 trial_no = 0
 for _ in range(conf['FIX_CROSS_TIME']):
     fix_dot.draw()
     win.flip()
 for _ in range(conf['TRIALS']):
-    key_pressed, rt, corr, rbodz = run_trial(win, conf, clock, stim)
-    RESULTS.append(["Eksperyment", trial_no, rt, corr, rbodz])
+    key_pressed, rt, corr, rbodz, czasb = run_trial(win, conf, clock, stim)
+    RESULTS.append(["Eksperyment", trial_no, rt, corr, rbodz, czasb])
     trial_no += 1
     win.flip()
     core.wait(1)
 
-# === Cleaning time ===
+
 save_beh_results()
 logging.flush()
 show_info(win, join('.', 'messages', 'end.txt'))
