@@ -5,6 +5,7 @@ import yaml
 import random
 import atexit
 import codecs
+import os
 
 from typing import List, Dict
 from os.path import join
@@ -13,7 +14,6 @@ from psychopy import visual, event, logging, gui, core
 
 @atexit.register
 def save_beh_results() -> None:
-
     '''
     Funkcja odpowiadająca za zapisywanie pliku wyjściowego w formacie ".csv".
     @atexit zostało użyte, w celu zapisania wyników, nawet w przypadku błędu interpretera.
@@ -26,8 +26,7 @@ def save_beh_results() -> None:
     logging.flush()
 
 
-def show_image(win: visual.window, file_name: str, size: List[int], key: str = 'f7') -> None:
-
+def show_image(win: visual.Window, file_name: str, size: List[int], key: str = 'f7') -> None:
     '''
     Funkcja odpowiedzialna za wyświetlenie początkowych instrukcji przy użyciu zdjęcia.
     Przyjmuje argumenty:
@@ -62,7 +61,7 @@ def read_text_from_file(file_name: str, insert: str = '') -> str:
     msg = list()
     with codecs.open(file_name, encoding='utf-8', mode='r') as data_file:
         for line in data_file:
-            if not line.startswith('#'): 
+            if not line.startswith('#'):
                 if line.startswith('<--insert-->'):
                     if insert:
                         msg.append(insert)
@@ -96,7 +95,7 @@ def show_info(win: visual.Window, file_name: str, insert: str = '') -> None:
 
 def abort_with_error(err: str) -> None:
     """
-    Uruchamia się pdoczas błędu
+    Uruchamia się podczas błędu
     """
     logging.critical(err)
     raise Exception(err)
@@ -104,36 +103,36 @@ def abort_with_error(err: str) -> None:
 
 def run_trial(win, conf, clock, stim):
     """
-Funkcja, która odpowiada za pojędyńczą próbę eksperymentalną w procedurze
+Funkcja, która odpowiada za pojedynczą próbę eksperymentalną w procedurze
 
-Zwraca klawisz naciśnięty przez użytkownika, czas reakcji, czy naciśnięty klawisz jest zgodny z wyświetlanym bodźcem,   
+Zwraca klawisz naciśnięty przez użytkownika, czas reakcji, czy naciśnięty klawisz jest zgodny z wyświetlanym bodźcem,
 rodzaj bodźca, czas wyświetlania bodźca
     """
 
     # Przygotowanie losowego wyświetlania bodźców
-    
-    stim_image = random.choice([("images\\neutr_p.png", 'right'),
-                                ("images\\neutr_l.png", 'left'),
-                                ("images\\zgdn_l.png", 'left'),
-                                ("images\\zgdn_p.png", 'right'),
-                                ("images\\nzgdn_p.png", 'right'),
-                                ("images\\nzgdn_l.png", 'left')])
-                            
+
+    stim_image = random.choice([
+        (os.path.join("images", "neutr_p.png"), 'right', "Neutralny"),
+        (os.path.join("images", "neutr_l.png"), 'left', "Neutralny"),
+        (os.path.join("images", "zgdn_l.png"), 'left', "Zgodny"),
+        (os.path.join("images", "zgdn_p.png"), 'right', "Zgodny"),
+        (os.path.join("images", "nzgdn_p.png"), 'right', "Niezgodny"),
+        (os.path.join("images", "nzgdn_l.png"), 'left', "Niezgodny")
+    ])
+
     stim.image = stim_image[0]
     correct_key = stim_image[1]
-    rbodz = ''
-    if stim_image[0] == "images\\neutr_p.png" or stim_image[0] == "images\\neutr_l.png":
-        rbodz = "Neutralny"
-    elif stim_image[0] == "images\\zgdn_p.png" or stim_image[0] == "images\\zgdn_l.png":
-        rbodz = "Zgodny"
-    elif stim_image[0] == "images\\nzgdn_p.png" or stim_image[0] == "images\\nzgdn_l.png":
-        rbodz = "Niezgodny"
+    rbodz = stim_image[2]
 
     event.clearEvents()
     win.callOnFlip(clock.reset)
 
     # Przygotowanie losowania czasu dla wyświetlania bodźca
-    czasb = ""
+    # Dla procedury losowana jest wartość stim_time, która podaje czas liczbie klatek (/60)
+    # Następnie, do zmiennej czasb, która służy do zapisywania czasu wyświetlania bodźca, przypisywana
+    # jest wartość odpowiadająca danemu czasu zamieniona z liczby klatek na czas w milisekundach.
+
+    czasb = ''
 
     stim_time = random.choice([9, 15, 21])
     if stim_time == 9:
@@ -143,33 +142,34 @@ rodzaj bodźca, czas wyświetlania bodźca
     elif stim_time == 21:
         czasb = "350"
 
-    for _ in range(stim_time):  # present stimuli
+    for _ in range(stim_time):  # prezentacja bodźców
         reaction = event.getKeys(keyList=list(conf['REACTION_KEYS']), timeStamped=clock)
-        if reaction:  # przerywa pętle jeśli klawisz zostanie naciśnięty
+        if reaction:  # przerywa pętlę jeśli klawisz zostanie naciśnięty
             break
         stim.draw()
         win.flip()
-    reaction = None
-    if not reaction:  # jeśli użytkownik nie zareagował podczas wyświetlania bodźca program czeka na reakcje
+
+    if not reaction:  # jeśli użytkownik nie zareagował podczas wyświetlania bodźca program czeka na reakcję
         win.flip()
         reaction = event.waitKeys(keyList=list(conf['REACTION_KEYS']), maxWait=conf['REACTION_TIME'], timeStamped=clock)
 
     if reaction:
         key_pressed, rt = reaction[0]
-        rt = round(rt * 1000) # przeliczanie czasu reakcji na milisekundy
+        rt = round(rt * 1000)  # przeliczanie czasu reakcji na milisekundy
     else:  # program wypisuje -1 w pliku gdzie zapisują się wyniki
         key_pressed = 'no_key'
         rt = -1.0
 
     is_correct = (key_pressed == correct_key)
 
-    return key_pressed, rt, is_correct, rbodz, czasb  
+    return key_pressed, rt, is_correct, rbodz, czasb
 
 
 # Zmienne globalne
 
 RESULTS = list()  # Lista, w której będą zbierane dane
-RESULTS.append(['Sesja', 'Numer próby', 'Czas reakcji', 'Poprawność', 'Rodzaj bodźca',"Czas wyświetlania bodźca"])  # Nagłówek w pliku wyjściowym
+RESULTS.append(['Sesja', 'Numer próby', 'Czas reakcji', 'Poprawność', 'Rodzaj bodźca',
+                'Czas wyświetlania bodźca'])  # Nagłówek w pliku wyjściowym
 PART_ID = ''
 SCREEN_RES = []
 
@@ -194,8 +194,8 @@ logging.info('FRAME RATE: {}'.format(frame_rate))
 logging.info('SCREEN RES: {}'.format(SCREEN_RES))
 
 # Przygotowanie punktu fiksacji i bodźca
-fix_dot = visual.ImageStim(win, image='images\\BlackDot.png', size=[280, 280])
-stim = visual.ImageStim(win, image='images\\neutr_p.png', size=(conf['STIM_SIZE1'], conf['STIM_SIZE2']))
+fix_dot = visual.ImageStim(win, image=os.path.join('images', 'BlackDot.png'), size=[280, 280])
+stim = visual.ImageStim(win, image=os.path.join('images', 'neutr_p.png'), size=(conf['STIM_SIZE1'], conf['STIM_SIZE2']))
 
 # Sesja treningowa
 show_image(win, join('.', 'images', 'instrukcja.png'), size=[1550, 1080])
@@ -206,7 +206,7 @@ for trial_no in range(conf['TRAINING_TRIALS']):
     RESULTS.append(["Trening", trial_no, '-', corr, rbodz, czasb])
 
     # Informacja zwrotna o poprawności udzielonej odpowiedzi
-    feedb = "images\\zielony.png" if corr else "images\\czerwony.png"
+    feedb = os.path.join("images", "zielony.png") if corr else os.path.join("images", "czerwony.png")
     feedb = visual.ImageStim(win, image=feedb, size=[1920, 1080])
     feedb.draw()
     win.flip()
@@ -225,7 +225,6 @@ for _ in range(conf['TRIALS']):
     trial_no += 1
     win.flip()
     core.wait(1)
-
 
 save_beh_results()
 logging.flush()
