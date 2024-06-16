@@ -128,7 +128,7 @@ rodzaj bodźca, czas wyświetlania bodźca
     win.callOnFlip(clock.reset)
 
     # Przygotowanie losowania czasu dla wyświetlania bodźca
-    # Dla procedury losowana jest wartość stim_time, która podaje czas liczbie klatek (/60)
+    # Dla procedury, losowana jest wartość stim_time, która podaje czas liczbie klatek (/60)
     # Następnie, do zmiennej czasb, która służy do zapisywania czasu wyświetlania bodźca, przypisywana
     # jest wartość odpowiadająca danemu czasu zamieniona z liczby klatek na czas w milisekundach.
 

@@ -1,0 +1,17 @@
+Sesja,Numer próby,Czas reakcji,Poprawność,Rodzaj bodźca,Czas wyświetlania bodźca
+Trening,0,-,True,Niezgodny,250
+Trening,1,-,False,Neutralny,350
+Trening,2,-,True,Niezgodny,250
+Trening,3,-,True,Niezgodny,150
+Trening,4,-,False,Niezgodny,250
+Trening,5,-,True,Neutralny,350
+Trening,6,-,True,Zgodny,150
+Trening,7,-,True,Zgodny,350
+Eksperyment,0,526,True,Niezgodny,350
+Eksperyment,1,476,True,Niezgodny,350
+Eksperyment,2,385,True,Zgodny,250
+Eksperyment,3,377,True,Zgodny,150
+Eksperyment,4,432,True,Niezgodny,150
+Eksperyment,5,431,True,Niezgodny,350
+Eksperyment,6,496,True,Niezgodny,250
+Eksperyment,7,400,True,Niezgodny,150
