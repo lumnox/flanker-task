@@ -1,2 +1,2 @@
-# PsychoPy_skeleton
-Minimal skeleton for coding own PsychoPy3 experiments. Prepared for CS classes at JU. 
+# Projekt zaliczeniowy z informatyki
+Flanker task z losowym czasem wyświetlania bodźców
